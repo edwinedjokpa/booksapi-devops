@@ -32,7 +32,7 @@ jobs:
             git pull origin main || { echo '❌ Git pull failed'; exit 1; }
 
             # Ensure logs directory exists (create if it doesn't)
-            mkdir -p /home/deploy_user/book-api/logs
+            mkdir -p /home/deploy_user/book_api/logs
 
             # Build the Docker image and restart the containers
             docker-compose down || { echo '❌ Failed to bring down Docker containers'; exit 1; }
