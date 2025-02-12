@@ -1,0 +1,51 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository to get the latest code
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      # Step 2: Deploy to VPS using Appleboy SSH
+      - name: Deploy to VPS using Appleboy SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            echo "🚀 Connected to VPS. Starting deployment..."
+
+            # Navigate to the project directory
+            cd /home/deploy_user/books_api || { echo '❌ Failed to navigate'; exit 1; }
+
+            # Pull the latest changes from GitHub
+            git pull origin main || { echo '❌ Git pull failed'; exit 1; }
+
+            # Ensure logs directory exists (create if it doesn't)
+            mkdir -p /home/deploy_user/book-api/logs
+
+            # Build the Docker image and restart the containers
+            docker-compose down || { echo '❌ Failed to bring down Docker containers'; exit 1; }
+            docker-compose up --build -d || { echo '❌ Docker compose failed'; exit 1; }
+
+            echo "✅ Deployment completed successfully!"
+
+      # Step 3: Notify Success
+      - name: Notify Success
+        if: success()
+        run: echo "✅ Deployment succeeded!"
+
+      # Step 4: Notify Failure
+      - name: Notify Failure
+        if: failure()
+        run: echo "❌ Deployment failed! Check logs for details."
