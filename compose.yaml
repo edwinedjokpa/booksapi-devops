@@ -1,7 +1,7 @@
 services:
-  booksapi:
+  server:
     build: .
-    container_name: booksapi
+    container_name: server
     volumes:
       - ./:/app
     networks:
@@ -13,9 +13,9 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
-      - "8080:80"
+      - "80:80"
     depends_on:
-      - booksapi 
+      - server 
     networks:
       - app-network
 
